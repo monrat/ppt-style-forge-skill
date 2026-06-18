@@ -1,0 +1,19 @@
+project: example-brand-ppt-style
+brand_name: Example Brand
+inputs:
+  templates:
+    - path: templates/Example_Report_Template.pptx
+      use: report / dense evidence-led decks
+    - path: templates/Example_Live_Template.pptx
+      use: live / keynote decks
+  brand_guidance:
+    - path_or_url: brand-book.pdf
+    - path_or_url: https://example.com/brand-guidelines
+outputs:
+  skill_name: example-ppt-style
+  generated_deck_sample: out/example-sample.pptx
+requirements:
+  preserve_master: true
+  preserve_theme: true
+  no_freehand_layouts: true
+  visual_qa_renderer: PowerPoint or LibreOffice, name explicitly
