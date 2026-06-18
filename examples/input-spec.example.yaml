@@ -1,3 +1,16 @@
+# input-spec — describes the INPUTS to the ppt-style-forge workflow itself.
+#
+# This is NOT the generator's input. It tells the forge skill what raw materials
+# (templates + brand guidance) to turn into a NEW brand skill. Think of it as a
+# project brief for "build me a brand skill from these".
+#
+# Contrast with deck-spec.example.yaml, which is the generator's input: it says
+# how to build ONE deck (per-slide layout + fields) once a brand skill exists.
+#
+# Both are valid; they operate at different levels:
+#   input-spec  -> forge skill  -> brand skill (e.g. <brand>-ppt-style)
+#   deck-spec   -> generate_deck.py -> one .pptx
+
 project: example-brand-ppt-style
 brand_name: Example Brand
 inputs:

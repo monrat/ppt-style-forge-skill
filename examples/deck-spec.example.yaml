@@ -1,0 +1,64 @@
+# deck-spec — the structured input to `scripts/generate_deck.py`.
+#
+# This is the machine-readable form of the "layout lock" described in
+# references/ppt-template-analysis.md and SKILL.md step 4. Where the layout
+# lock is prose ("slide N -> layout -> why -> fields"), the deck-spec says the
+# same thing as data so a generator can act on it and a validator can check it.
+#
+# Contrast with input-spec.example.yaml: that describes the forge skill's inputs
+# (templates + brand book -> a NEW brand skill). This deck-spec describes ONE
+# deck's slides (layout + fields -> a .pptx) once a brand skill already exists.
+#
+# Run:  python scripts/generate_deck.py examples/deck-spec.example.yaml \
+#         --template templates/source.pptx --out out/example.pptx
+# Then: python scripts/validate_deck.py out/example.pptx \
+#         --spec examples/deck-spec.example.yaml --template templates/source.pptx
+
+# Optional: where to write the .pptx. Defaults to out/<spec-stem>.pptx.
+output: out/example.pptx
+
+slides:
+  # --- A cover. Title Slide has a centered title (ctrTitle) + subtitle. ---
+  - layout: Title Slide
+    purpose: cover
+    fields:
+      ctrTitle: "Brand-Native Decks, Generated"
+      subTitle: "A reusable style skill demo"
+
+  # --- A content slide. 'body' matches the content placeholder; use \n for
+  # multiple paragraphs / bullet lines. ---
+  - layout: Title and Content
+    purpose: key message
+    fields:
+      title: "Why template-native matters"
+      body: |
+        Start from the real .pptx master, not brand colours alone.
+        Named layouts and placeholders carry the visual truth.
+        Validate mechanically before declaring done.
+
+  # --- A section divider. Title Only has just a title, so only that is
+  # required; the generator errors if you leave a required slot empty. ---
+  - layout: Title Only
+    purpose: section break
+    fields:
+      title: "How it works"
+
+  # --- Targeting a placeholder by index with idx<N>. Useful when a layout has
+  # two same-typed placeholders (e.g. Two Content's two bodies). ---
+  - layout: Two Content
+    purpose: comparison
+    fields:
+      title: "Two paths"
+      idx1: "Left column text"
+      idx2: "Right column text"
+
+# Field key matching (flexible — pick whichever reads best):
+#   By type:  title | ctrTitle | subTitle | body
+#             (also case-insensitive: Title, CTRTITLE, ctr_title all work)
+#   By index: idx0 | idx1 | idx2 ...  (idx is the placeholder's OOXML idx)
+#
+# Safety (enforced by generate_deck.py, aborts on violation):
+#   - `layout` must be a real named layout in the template (checked vs OOXML)
+#   - every title/ctrTitle/subTitle/body placeholder must be filled — if a
+#     layout has a slot you don't use, pick a simpler layout instead of
+#     leaving it empty

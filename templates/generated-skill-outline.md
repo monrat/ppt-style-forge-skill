@@ -24,11 +24,11 @@ platforms: [linux, macos, windows]
 
 ## Workflow
 
-1. Inventory templates.
-2. Extract theme tokens.
-3. Build layout lock.
-4. Author JSON/YAML slide spec.
-5. Generate deck.
-6. Validate.
-7. Render/inspect/fix.
+1. Inventory templates: `python3 scripts/extract_pptx_inventory.py templates/source.pptx`
+2. Extract theme tokens (from the inventory output).
+3. Build layout lock (prose) — and its structured form, a `deck-spec.yaml`.
+4. Author the deck-spec (see `examples/deck-spec.example.yaml` for the schema).
+5. Generate: `python3 scripts/generate_deck.py deck-spec.yaml --template templates/source.pptx`
+6. Validate: `python3 scripts/validate_deck.py out/deck.pptx --spec deck-spec.yaml --template templates/source.pptx`
+7. Render/inspect/fix: `python3 scripts/render_qa.py out/deck.pptx`
 8. Package final `.pptx`.

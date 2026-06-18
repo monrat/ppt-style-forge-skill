@@ -5,3 +5,10 @@ __pycache__/
 /tmp/
 *.zip
 .env
+
+# Local, brand-specific work — not part of the generic forge skill.
+# These are proprietary brand assets (templates + brand books) and any locally
+# produced brand skills. Keep them out of the public PR.
+/brandbook/
+/*-ppt-style/
+

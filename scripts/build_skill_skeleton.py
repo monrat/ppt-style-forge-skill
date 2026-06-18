@@ -43,10 +43,27 @@ FILES = {
     "references/components.md": "# Components\n\nDocument typography, footer/logo band, charts, tables, images, icons, and diagrams.\n",
     "references/quality-checklist.md": "# Quality Checklist\n\nUse the checklist from ppt-style-forge as the starting point.\n",
     "references/color-tokens.json": "{}\n",
-    "examples/sample-spec.json": "{\n  \"slides\": []\n}\n",
+    "examples/sample-deck-spec.json": (
+        '{\n'
+        '  "_comment": "deck-spec: the generator input. Each slide names a real '
+        'layout from this brand skill template and the placeholder text to fill. '
+        'See the parent ppt-style-forge skill examples/deck-spec.example.yaml for '
+        'the full schema.",\n'
+        '  "slides": []\n'
+        '}\n'
+    ),
     "assets/README.md": "# Assets\n\nStore approved redistributable assets here. Do not store proprietary assets unless approved.\n",
     "templates/README.md": "# Templates\n\nPlace source .pptx templates here if redistribution is allowed.\n",
-    "scripts/README.md": "# Scripts\n\nAdd generator and validator scripts here.\n",
+    "scripts/README.md": (
+        "# Scripts\n\n"
+        "This brand skill reuses the producer/checker scripts from the parent\n"
+        "ppt-style-forge skill rather than shipping its own copies:\n\n"
+        "- `generate_deck.py`    - deck-spec + template -> .pptx (needs python-pptx)\n"
+        "- `validate_deck.py`   - 9 P0 checks vs template (stdlib)\n"
+        "- `render_qa.py`       - .pptx -> per-slide PNG (soffice or PowerPoint COM)\n"
+        "- `extract_pptx_inventory.py` - read-only template inventory (stdlib)\n\n"
+        "Drop brand-specific helpers here only if they don't belong upstream.\n"
+    ),
 }
 
 

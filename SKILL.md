@@ -1,7 +1,7 @@
 ---
 name: ppt-style-forge
 description: Build a reusable PowerPoint style-generation skill from a PPT template plus brand book/guidance. Extracts template layouts/theme, derives brand rules, writes validators, packages assets, and enforces visual QA.
-version: 0.1.0
+version: 0.2.0
 author: Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
@@ -81,9 +81,11 @@ Create:
 │   ├── quality-checklist.md
 │   └── color-tokens.json
 ├── scripts/
-│   ├── generate_deck.py
-│   ├── validate_deck.py
-│   └── extract_template_inventory.py
+│   ├── generate_deck.py            # producer: deck-spec -> .pptx (python-pptx)
+│   ├── validate_deck.py            # checker: 9 P0 rules vs template (stdlib)
+│   ├── render_qa.py                # visual QA: .pptx -> per-slide PNG
+│   ├── extract_pptx_inventory.py   # read-only template inventory (stdlib)
+│   └── pptx_io.py                  # shared OOXML parse helpers (stdlib)
 ├── examples/
 └── assets/
 ```
@@ -101,9 +103,17 @@ For each named layout, document:
 
 Before generation, create a **layout lock**: one line per slide mapping page → exact layout name → why → fields.
 
+The lock's structured form is a **deck-spec** (see `examples/deck-spec.example.yaml`): a list of slides, each naming a layout and the placeholder text to fill. `generate_deck.py` consumes it directly, and `validate_deck.py` checks the generated deck against it (page count, layout names). The two must stay in agreement — the deck-spec *is* the layout lock, written as data.
+
 ### 5. Generate from placeholders, not freehand geometry
 
-Rules:
+Run:
+
+```bash
+python3 scripts/generate_deck.py examples/deck-spec.example.yaml --template templates/source.pptx
+```
+
+Rules (enforced by the generator; violations abort):
 
 - Add fresh slides from named layouts.
 - Fill placeholders; do not duplicate populated sample slides.
@@ -125,6 +135,14 @@ Validator must check at least:
 - banned/off-brand colours;
 - footer/logo/identity preservation.
 
+Run:
+
+```bash
+python3 scripts/validate_deck.py out/deck.pptx --spec examples/deck-spec.example.yaml --template templates/source.pptx
+```
+
+The checks map 1:1 to the P0 list in `references/quality-checklist.md`. Exit code is non-zero on any P0 failure; a JSON report is written next to the deck.
+
 ### 7. Render and visually QA
 
 A first render is almost never final. Convert to images or inspect in a canonical renderer and look for:
@@ -137,6 +155,14 @@ A first render is almost never final. Convert to images or inspect in a canonica
 - low contrast;
 - bad placeholder ordering;
 - leftover sample content.
+
+Run:
+
+```bash
+python3 scripts/render_qa.py out/deck.pptx
+```
+
+`render_qa.py` uses LibreOffice (`soffice`) if present, else PowerPoint via COM (Windows). If no renderer is available it prints a clear notice and exits 0 — per the rule below, state the limitation and continue.
 
 Fix and re-run validation. Do not declare success without a fix-and-verify loop unless a real renderer is unavailable; if unavailable, state the limitation.
 
@@ -171,6 +197,27 @@ A good generated style skill should let a future agent produce a deck that:
 - Default Office chart colours often leak into decks.
 - Icon libraries are often referenced in guidance but not actually available; do not crop website screenshots as production icons.
 - Multi-column placeholder order can be wrong if inherited layout coordinates are ignored.
+
+## Scripts quick reference
+
+| Script | Role | Deps | In → Out |
+|--------|------|------|----------|
+| `extract_pptx_inventory.py` | Read-only template inventory (human-readable) | stdlib | `.pptx` → stdout |
+| `generate_deck.py` | Producer: fill named-layout placeholders from a deck-spec | **python-pptx** | `deck-spec.yaml` + template → `.pptx` + generation-report.json |
+| `validate_deck.py` | Checker: 9 P0 rules vs template + deck-spec | stdlib | `.pptx` (+ optional template/spec) → report.json; exit≠0 on failure |
+| `render_qa.py` | Visual QA: render each slide to an image | soffice or PowerPoint/COM | `.pptx` → `slideN.png` per page |
+| `pptx_io.py` | Shared OOXML parse helpers (imported by the above) | stdlib | — |
+| `build_skill_skeleton.py` | Scaffold a new brand skill's doc skeleton | stdlib | `out_dir --brand <name>` → `<brand>-ppt-style/` |
+
+Typical loop (steps 1, 5, 6, 7):
+
+```bash
+python3 scripts/extract_pptx_inventory.py templates/source.pptx > references/template-inventory.txt
+# ...author deck-spec.yaml using the inventory...
+python3 scripts/generate_deck.py deck-spec.yaml --template templates/source.pptx
+python3 scripts/validate_deck.py out/deck.pptx --spec deck-spec.yaml --template templates/source.pptx
+python3 scripts/render_qa.py out/deck.pptx
+```
 
 ## Linked references
 
